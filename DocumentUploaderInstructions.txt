@@ -1,5 +1,6 @@
-1. Add folder with this structure:
+1. Add folder with this structure to the "things to process" folder:
     Folder named: <Partner Short Code>
-        - Client IDs
-        - Client Void Cheques
+        - <folder name>
+    csv's require a header row with  "filename" and a "qid"
+
 2. Tell Thomas (or anyone with a Mac) to "Run the script"
