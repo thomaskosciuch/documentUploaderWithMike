@@ -1,0 +1,5 @@
+1. Add folder with this structure:
+    Folder named: <Partner Short Code>
+        - Client IDs
+        - Client Void Cheques
+2. Tell Thomas (or anyone with a Mac) to "Run the script"
