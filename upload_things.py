@@ -13,15 +13,12 @@ SUB_FOLDER_OVERRIDES: dict[str, str] = {
 #     'Client IDs': 
 }
 
-
-
-def upload_to_s3(filename: str, content: any, **kwargs) -> None:
+def upload_to_s3(upload_filename: str, filename: str, **kwargs) -> None:
     s3 = boto3.resource(service_name='s3', aws_access_key_id=environ['AWS_ACCESS_KEY_ID'], aws_secret_access_key=environ['AWS_SECRET_ACCESS_KEY'], region_name=environ['AWS_S3_REGION_NAME'])
     bucket_name:str = environ['S3_BUCKET']
-    if 'Expires' in kwargs:
-        s3.Bucket(bucket_name).put_object(Key=filename, Body=content, Expires=kwargs['Expires'])
-    else:
-        s3.Bucket(bucket_name).put_object(Key=filename, Body=content)
+    with open(filename, 'rb') as file:
+        content = file.read()
+        s3.Bucket(bucket_name).put_object(Key=upload_filename, Body=content)
     
 def s3_bucket_client():
     s3 = boto3.resource(service_name='s3', aws_access_key_id=environ['AWS_ACCESS_KEY_ID'], aws_secret_access_key=environ['AWS_SECRET_ACCESS_KEY'], region_name=environ['AWS_S3_REGION_NAME'])
@@ -46,9 +43,12 @@ def find_dict_with_qid(header_rows: list[str]) -> str|None:
         if 'qid' in key_.lower():
             return key_
 
-def move_files(source:str, destination:str):
+def move_files(source:str, destination:str, qid:str):
     makedirs(join(*destination.__str__().split('/')[:-1]), exist_ok=True)
-    copy(source, destination)
+    qid_index = destination.index('.')
+    new_destination = f"{destination[:qid_index]}_{qid}{destination[qid_index:]}"
+    copy(source, new_destination)
+    
 
 def write_tuple_to_csv(file_path, data):
     with open(file_path, 'w', newline='') as csvfile:
@@ -74,7 +74,7 @@ if __name__ == "__main__":
             csvs = get_csv(join(INPUT_FOLDER, folder, sub_folder))
             assert len(csvs) == 1, f'Too many CSVs found. Tell Mike to correct. csvs={csvs}'
             filenames: list[dict] = csv_to_dict_list(join(INPUT_FOLDER, short_code, sub_folder, csvs[0]))
-            assert 'Filename' in filenames[0].keys(), 'We require a Filename field'
+            assert 'Filename' in filenames[0].keys(), f'We require a Filename field in {join(INPUT_FOLDER, short_code, sub_folder, csvs[0])}'
             qid_field = find_dict_with_qid(list(filenames[0].keys()))
             assert qid_field,  'We require a qid in one of the keys'
             
@@ -87,10 +87,10 @@ if __name__ == "__main__":
                 upload_name = f"public/{short_code}/{qid}/Internal/Onboarding/{upload_sub_folder}/{file_filename}"                
 
                 if qid not in ['None', ""]:
-                    local_name = join(OUTPUT_FOLDER, folder, sub_folder, file_filename)
+                    local_name = join(INPUT_FOLDER, folder, sub_folder, file_filename)
                     upload_to_s3(upload_name, local_name)
                     things_that_were_uploaded.append((qid, folder, sub_folder, file_filename, upload_name))
-                    move_files(folder_filepath, local_name)
+                    move_files(folder_filepath, join(OUTPUT_FOLDER, folder, sub_folder, file_filename), qid)
                 else:
                     things_that_were_not_uploaded.append((qid, folder, sub_folder, file_filename, upload_name))
                     move_files(folder_filepath, join(OUTPUT_FOLDER, folder, 'Things that were not uploaded', sub_folder, file_filename))
