@@ -4,3 +4,13 @@
     csv's require a header row with  "filename" and a "qid"
 
 2. Tell Thomas (or anyone with a Mac) to "Run the script"
+Kulbida, O DL exp 2027MAR31.jpg
+
+Williams, M DL Exp 2026Mar31.jpg
+ROY, L DL Exp 2029Apr30.pdf
+CHURCHMAN, L DL exp 2029Nov30.jpg
+CEY, L DL 
+GRAY, B DL Exp.jpeg
+
+PETERS, L DL Exp 2026Mar31.PNG
+BARLOW, C DL Exp 2029July31.PDF
